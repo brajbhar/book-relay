@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" fill="none" role="img" aria-label="Book Relay">
+  <text x="0" y="34" font-family="Georgia, 'Times New Roman', serif" font-size="32" font-weight="700" fill="#1e293b">Book</text>
+  <path d="M78 24h18" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 4"/>
+  <path d="M96 24c8 0 14-6 14-6s6 6 14 6" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M122 18l4 6-4 6" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="132" y="34" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="800" fill="#1d4ed8">Relay</text>
+</svg>

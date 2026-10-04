@@ -1,0 +1,74 @@
+x-db-env: &db-env
+  DB_HOST: sqlserver
+  DB_PORT: "1433"
+  DB_NAME: book_relay
+  DB_USER: sa
+  DB_PASSWORD: ${MSSQL_SA_PASSWORD:-BookRelay@12345}
+
+x-jwt-env: &jwt-env
+  JWT_SECRET: ${JWT_SECRET:-book-relay-dev-secret-change-in-production-min-32-chars}
+  JWT_EXPIRATION_MS: "86400000"
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: book-relay-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-BookRelay@12345}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${MSSQL_SA_PASSWORD:-BookRelay@12345}" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    volumes:
+      - ./scripts/init-db.sql:/init-db.sql:ro
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - >
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "${MSSQL_SA_PASSWORD:-BookRelay@12345}" -C -i /init-db.sql
+    restart: "no"
+
+  backend:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: book-relay-app
+    container_name: book-relay-backend
+    ports:
+      - "8080:8080"
+    environment:
+      <<: [*db-env, *jwt-env]
+      SERVER_PORT: "8080"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ""
+    container_name: book-relay-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: on-failure
+
+volumes:
+  sqlserver_data:
