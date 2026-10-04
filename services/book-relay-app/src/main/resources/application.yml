@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:book_relay};encrypt=true;trustServerCertificate=true
     username: ${DB_USER:sa}
-    password: ${DB_PASSWORD:BookRelay@12345}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
