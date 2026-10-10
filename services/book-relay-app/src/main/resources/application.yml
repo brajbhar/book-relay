@@ -6,8 +6,8 @@ spring:
     name: book-relay-app
   datasource:
     url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:book_relay};encrypt=true;trustServerCertificate=true
-    username: ${DB_USER:sa}
-    password: ${DB_PASSWORD}
+    username: dev_user
+    password: ${DEV_USER_DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
