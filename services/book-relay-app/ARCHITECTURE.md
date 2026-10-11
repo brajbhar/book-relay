@@ -20,6 +20,7 @@ Single Spring Boot app (`book-relay-app`) on port **8080**. Domain logic is spli
    - `AuthUserPort` — catalog reads owner display name / postal code
    - `CatalogPort` — lending updates book status
    - `FulfillmentPort` — lending creates fulfillment draft
+   - `LoanPort` — fulfillment checks the caller is the loan's borrower or lender
 3. **Keep SQL schemas separate** — entities use `@Table(..., schema = "…")`.
 4. **Keep REST paths stable** — `/api/auth/**`, `/api/books/**`, `/api/borrows/**`, `/api/fulfillment/**`.
 

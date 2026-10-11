@@ -8,6 +8,7 @@ import com.bookrelay.fulfillment.dto.StatusPatchRequest;
 import com.bookrelay.fulfillment.service.FulfillmentService;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,27 +29,34 @@ public class FulfillmentController {
     }
 
     @PostMapping
-    public FulfillmentResponse create(@Valid @RequestBody CreateFulfillmentRequest request) {
-        return fulfillmentService.create(request);
+    public FulfillmentResponse create(Authentication auth, @Valid @RequestBody CreateFulfillmentRequest request) {
+        return fulfillmentService.create(userId(auth), request);
     }
 
     @GetMapping("/loan/{loanId}")
-    public FulfillmentResponse getByLoan(@PathVariable UUID loanId) {
-        return fulfillmentService.getByLoan(loanId);
+    public FulfillmentResponse getByLoan(Authentication auth, @PathVariable UUID loanId) {
+        return fulfillmentService.getByLoan(userId(auth), loanId);
     }
 
     @PutMapping("/{id}/meetup")
-    public FulfillmentResponse updateMeetup(@PathVariable UUID id, @RequestBody MeetupRequest request) {
-        return fulfillmentService.updateMeetup(id, request);
+    public FulfillmentResponse updateMeetup(
+            Authentication auth, @PathVariable UUID id, @RequestBody MeetupRequest request) {
+        return fulfillmentService.updateMeetup(userId(auth), id, request);
     }
 
     @PutMapping("/{id}/shipment")
-    public FulfillmentResponse updateShipment(@PathVariable UUID id, @RequestBody ShipmentRequest request) {
-        return fulfillmentService.updateShipment(id, request);
+    public FulfillmentResponse updateShipment(
+            Authentication auth, @PathVariable UUID id, @RequestBody ShipmentRequest request) {
+        return fulfillmentService.updateShipment(userId(auth), id, request);
     }
 
     @PatchMapping("/{id}/status")
-    public FulfillmentResponse patchStatus(@PathVariable UUID id, @Valid @RequestBody StatusPatchRequest request) {
-        return fulfillmentService.patchStatus(id, request);
+    public FulfillmentResponse patchStatus(
+            Authentication auth, @PathVariable UUID id, @Valid @RequestBody StatusPatchRequest request) {
+        return fulfillmentService.patchStatus(userId(auth), id, request);
+    }
+
+    private UUID userId(Authentication authentication) {
+        return (UUID) authentication.getPrincipal();
     }
 }

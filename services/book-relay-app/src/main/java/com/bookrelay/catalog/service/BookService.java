@@ -84,6 +84,22 @@ public class BookService {
     }
 
     @Transactional
+    public BookResponse updateStatusAsOwner(UUID ownerId, UUID id, BookStatus status) {
+        BookListing book = findBook(id);
+        if (!book.getOwnerId().equals(ownerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not the book owner");
+        }
+        if (status == BookStatus.BORROWED) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "BORROWED status is set by approving a borrow request");
+        }
+        if (book.getStatus() == BookStatus.BORROWED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Book is on loan");
+        }
+        return updateStatus(id, status);
+    }
+
+    @Transactional
     public BookResponse updateStatus(UUID id, BookStatus status) {
         BookListing book = findBook(id);
         book.setStatus(status);

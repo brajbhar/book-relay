@@ -3,6 +3,7 @@ package com.bookrelay.auth.service;
 import com.bookrelay.auth.dto.AddressRequest;
 import com.bookrelay.auth.dto.AddressResponse;
 import com.bookrelay.auth.dto.LoginRequest;
+import com.bookrelay.auth.dto.PublicUserResponse;
 import com.bookrelay.auth.dto.RegisterRequest;
 import com.bookrelay.auth.dto.TokenResponse;
 import com.bookrelay.auth.dto.UpdateProfileRequest;
@@ -81,6 +82,11 @@ public class AuthService {
 
     public UserProfileResponse getUserById(UUID userId) {
         return toProfile(findUser(userId));
+    }
+
+    public PublicUserResponse getPublicProfile(UUID userId) {
+        User user = findUser(userId);
+        return new PublicUserResponse(user.getId(), user.getDisplayName(), user.getCreatedAt());
     }
 
     public List<AddressResponse> listAddresses(UUID userId) {

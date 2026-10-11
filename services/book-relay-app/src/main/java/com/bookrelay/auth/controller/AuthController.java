@@ -3,6 +3,7 @@ package com.bookrelay.auth.controller;
 import com.bookrelay.auth.dto.AddressRequest;
 import com.bookrelay.auth.dto.AddressResponse;
 import com.bookrelay.auth.dto.LoginRequest;
+import com.bookrelay.auth.dto.PublicUserResponse;
 import com.bookrelay.auth.dto.RegisterRequest;
 import com.bookrelay.auth.dto.TokenResponse;
 import com.bookrelay.auth.dto.UpdateProfileRequest;
@@ -77,8 +78,8 @@ public class AuthController {
     }
 
     @GetMapping("/users/{id}")
-    public UserProfileResponse getUser(@PathVariable UUID id) {
-        return authService.getUserById(id);
+    public PublicUserResponse getUser(@PathVariable UUID id) {
+        return authService.getPublicProfile(id);
     }
 
     private UUID userId(Authentication authentication) {

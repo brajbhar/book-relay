@@ -13,6 +13,7 @@ import com.bookrelay.fulfillment.entity.ShipmentPlan;
 import com.bookrelay.fulfillment.repository.FulfillmentRepository;
 import com.bookrelay.fulfillment.repository.MeetupPlanRepository;
 import com.bookrelay.fulfillment.repository.ShipmentPlanRepository;
+import com.bookrelay.integration.lending.LoanPort;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,14 +26,17 @@ public class FulfillmentService {
     private final FulfillmentRepository fulfillmentRepository;
     private final MeetupPlanRepository meetupPlanRepository;
     private final ShipmentPlanRepository shipmentPlanRepository;
+    private final LoanPort loanPort;
 
     public FulfillmentService(
             FulfillmentRepository fulfillmentRepository,
             MeetupPlanRepository meetupPlanRepository,
-            ShipmentPlanRepository shipmentPlanRepository) {
+            ShipmentPlanRepository shipmentPlanRepository,
+            LoanPort loanPort) {
         this.fulfillmentRepository = fulfillmentRepository;
         this.meetupPlanRepository = meetupPlanRepository;
         this.shipmentPlanRepository = shipmentPlanRepository;
+        this.loanPort = loanPort;
     }
 
     @Transactional
@@ -47,7 +51,10 @@ public class FulfillmentService {
     }
 
     @Transactional
-    public FulfillmentResponse create(CreateFulfillmentRequest request) {
+    public FulfillmentResponse create(UUID userId, CreateFulfillmentRequest request) {
+        if (!loanPort.isParticipant(request.loanId(), userId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found");
+        }
         Fulfillment f = fulfillmentRepository
                 .findByLoanId(request.loanId())
                 .orElseGet(() -> {
@@ -66,16 +73,17 @@ public class FulfillmentService {
         return toResponse(f);
     }
 
-    public FulfillmentResponse getByLoan(UUID loanId) {
+    public FulfillmentResponse getByLoan(UUID userId, UUID loanId) {
         Fulfillment f = fulfillmentRepository
                 .findByLoanId(loanId)
+                .filter(found -> loanPort.isParticipant(found.getLoanId(), userId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fulfillment not found"));
         return toResponse(f);
     }
 
     @Transactional
-    public FulfillmentResponse updateMeetup(UUID id, MeetupRequest request) {
-        Fulfillment f = findFulfillment(id);
+    public FulfillmentResponse updateMeetup(UUID userId, UUID id, MeetupRequest request) {
+        Fulfillment f = findFulfillment(userId, id);
         if (f.getType() != FulfillmentType.MEETUP) {
             f.setType(FulfillmentType.MEETUP);
         }
@@ -102,8 +110,8 @@ public class FulfillmentService {
     }
 
     @Transactional
-    public FulfillmentResponse updateShipment(UUID id, ShipmentRequest request) {
-        Fulfillment f = findFulfillment(id);
+    public FulfillmentResponse updateShipment(UUID userId, UUID id, ShipmentRequest request) {
+        Fulfillment f = findFulfillment(userId, id);
         if (f.getType() != FulfillmentType.MAIL) {
             f.setType(FulfillmentType.MAIL);
         }
@@ -137,16 +145,17 @@ public class FulfillmentService {
     }
 
     @Transactional
-    public FulfillmentResponse patchStatus(UUID id, StatusPatchRequest request) {
-        Fulfillment f = findFulfillment(id);
+    public FulfillmentResponse patchStatus(UUID userId, UUID id, StatusPatchRequest request) {
+        Fulfillment f = findFulfillment(userId, id);
         f.setStatus(request.status());
         fulfillmentRepository.save(f);
         return toResponse(f);
     }
 
-    private Fulfillment findFulfillment(UUID id) {
+    private Fulfillment findFulfillment(UUID userId, UUID id) {
         return fulfillmentRepository
                 .findById(id)
+                .filter(f -> loanPort.isParticipant(f.getLoanId(), userId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fulfillment not found"));
     }
 

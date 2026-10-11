@@ -64,8 +64,9 @@ public class BookController {
     }
 
     @PatchMapping("/{id}/status")
-    public BookResponse updateStatus(@PathVariable UUID id, @Valid @RequestBody StatusUpdateRequest request) {
-        return bookService.updateStatus(id, request.status());
+    public BookResponse updateStatus(
+            Authentication authentication, @PathVariable UUID id, @Valid @RequestBody StatusUpdateRequest request) {
+        return bookService.updateStatusAsOwner(userId(authentication), id, request.status());
     }
 
     private UUID userId(Authentication authentication) {
